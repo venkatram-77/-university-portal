@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Branches - University Portal{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <h1>Branches</h1>
+        <p>All available branches in the university</p>
+    </div>
+
+    <div class="branches-grid">
+        {% for branch in branches %}
+        <div class="branch-card">
+            <div class="branch-icon">
+                <i class="fas fa-code-branch"></i>
+            </div>
+            <h3>{{ branch.name }}</h3>
+            <p class="branch-code">{{ branch.code }}</p>
+            <p class="description">{{ branch.description|default:"No description available" }}</p>
+            
+            {% if branch.courses.all %}
+            <div class="branch-courses">
+                <strong>Courses ({{ branch.courses.count }}):</strong>
+                <ul>
+                    {% for course in branch.courses.all|slice:":3" %}
+                    <li>{{ course.name }}</li>
+                    {% endfor %}
+                    {% if branch.courses.count > 3 %}
+                    <li class="more">+{{ branch.courses.count|add:"-3" }} more</li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            <p>No branches found</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .branches-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .branch-card {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-top: 4px solid #3498db;
+    }
+
+    .branch-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .branch-icon {
+        font-size: 3rem;
+        color: #3498db;
+        margin-bottom: 1rem;
+    }
+
+    .branch-card h3 {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .branch-code {
+        color: #3498db;
+        font-weight: bold;
+        margin: 0.3rem 0;
+    }
+
+    .description {
+        color: #7f8c8d;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+
+    .branch-courses {
+        text-align: left;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 5px;
+        margin-top: 1rem;
+    }
+
+    .branch-courses ul {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+    }
+
+    .branch-courses li {
+        padding: 0.3rem 0;
+        color: #34495e;
+        font-size: 0.9rem;
+    }
+
+    .branch-courses li:before {
+        content: "• ";
+        color: #3498db;
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+
+    .branch-courses .more {
+        color: #3498db;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

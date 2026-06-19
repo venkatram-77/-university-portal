@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - University Portal{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card.blue { border-color: #667eea; }
+    .stat-card.green { border-color: #48bb78; }
+    .stat-card.orange { border-color: #ed8936; }
+    .stat-card.red { border-color: #fc8181; }
+    .stat-card.purple { border-color: #9f7aea; }
+    .stat-icon {
+        width: 52px; height: 52px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; flex-shrink: 0;
+    }
+    .stat-icon.blue { background: #ebf4ff; color: #667eea; }
+    .stat-icon.green { background: #f0fff4; color: #48bb78; }
+    .stat-icon.orange { background: #fffaf0; color: #ed8936; }
+    .stat-icon.red { background: #fff5f5; color: #fc8181; }
+    .stat-icon.purple { background: #faf5ff; color: #9f7aea; }
+    .stat-number { font-size: 1.75rem; font-weight: 700; color: #2d3748; line-height: 1; }
+    .stat-label { font-size: 0.8rem; color: #718096; margin-top: 0.2rem; }
+
+    .card-box {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        height: 100%;
+    }
+    .card-box h6 { font-weight: 700; color: #2d3748; margin-bottom: 1rem; font-size: 0.95rem; }
+
+    .notice-item {
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #f7fafc;
+        font-size: 0.875rem;
+    }
+    .notice-item:last-child { border-bottom: none; }
+    .notice-title { font-weight: 600; color: #2d3748; }
+    .notice-time { font-size: 0.75rem; color: #a0aec0; }
+
+    .event-item {
+        display: flex; gap: 0.75rem; align-items: flex-start;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f7fafc;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-date-box {
+        background: #667eea;
+        color: white;
+        border-radius: 8px;
+        padding: 0.4rem 0.6rem;
+        text-align: center;
+        min-width: 44px;
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+    .event-date-box strong { display: block; font-size: 1.1rem; }
+
+    .badge-paid { background: #c6f6d5; color: #276749; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
+    .badge-pending { background: #fed7d7; color: #9b2c2c; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
+
+    .exam-item, .assign-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f7fafc;
+        font-size: 0.875rem;
+    }
+    .exam-item:last-child, .assign-item:last-child { border-bottom: none; }
+
+    .table-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
+    .table-card table { margin: 0; }
+    .table-card th { background: #f7fafc; color: #4a5568; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="stat-number">{{ total_students }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="fas fa-book"></i></div>
+            <div>
+                <div class="stat-number">{{ total_courses }}</div>
+                <div class="stat-label">Courses</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card orange">
+            <div class="stat-icon orange"><i class="fas fa-code-branch"></i></div>
+            <div>
+                <div class="stat-number">{{ total_branches }}</div>
+                <div class="stat-label">Branches</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="stat-number">{{ fee_paid_count }}</div>
+                <div class="stat-label">Fee Paid</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card red">
+            <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+            <div>
+                <div class="stat-number">{{ fee_pending_count }}</div>
+                <div class="stat-label">Fee Pending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card purple">
+            <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+            <div>
+                <div class="stat-number">{{ avg_score }}%</div>
+                <div class="stat-label">Avg Grade</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card-box">
+            <h6><i class="fas fa-chart-pie me-2 text-primary"></i>Fee Collection Status</h6>
+            <canvas id="feeChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-box">
+            <h6><i class="fas fa-chart-bar me-2 text-success"></i>Students by Branch</h6>
+            <canvas id="branchChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Notices, Events, Exams, Assignments -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card-box">
+            <h6><i class="fas fa-bullhorn me-2 text-warning"></i>Latest Notices
+                <a href="{% url 'notice_add' %}" class="btn btn-sm btn-outline-primary float-end" style="font-size:0.7rem;padding:0.2rem 0.5rem;">+ Add</a>
+            </h6>
+            {% for notice in recent_notices %}
+            <div class="notice-item">
+                <div class="notice-title">{{ notice.title }}</div>
+                <div class="notice-time">{{ notice.posted_at|date:"M d, Y" }}</div>
+            </div>
+            {% empty %}
+            <p class="text-muted" style="font-size:0.85rem;">No notices yet.</p>
+            {% endfor %}
+            <a href="{% url 'notice_board' %}" class="btn btn-sm btn-link p-0 mt-2" style="font-size:0.8rem;">View all →</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box">
+            <h6><i class="fas fa-calendar-day me-2 text-info"></i>Upcoming Events
+                <a href="{% url 'event_add' %}" class="btn btn-sm btn-outline-primary float-end" style="font-size:0.7rem;padding:0.2rem 0.5rem;">+ Add</a>
+            </h6>
+            {% for event in upcoming_events %}
+            <div class="event-item">
+                <div class="event-date-box">
+                    <strong>{{ event.event_date|date:"d" }}</strong>
+                    {{ event.event_date|date:"M" }}
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:0.875rem;color:#2d3748;">{{ event.title }}</div>
+                    <div style="font-size:0.75rem;color:#718096;">{{ event.location|default:"TBD" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted" style="font-size:0.85rem;">No upcoming events.</p>
+            {% endfor %}
+            <a href="{% url 'events' %}" class="btn btn-sm btn-link p-0 mt-2" style="font-size:0.8rem;">View all →</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box">
+            <h6><i class="fas fa-file-alt me-2 text-danger"></i>Upcoming Exams
+                <a href="{% url 'exam_add' %}" class="btn btn-sm btn-outline-primary float-end" style="font-size:0.7rem;padding:0.2rem 0.5rem;">+ Add</a>
+            </h6>
+            {% for exam in upcoming_exams %}
+            <div class="exam-item">
+                <div>
+                    <div style="font-weight:600;color:#2d3748;">{{ exam.exam_name }}</div>
+                    <div style="font-size:0.75rem;color:#718096;">{{ exam.course.name }}</div>
+                </div>
+                <span class="badge bg-danger" style="font-size:0.7rem;">{{ exam.exam_date|date:"M d" }}</span>
+            </div>
+            {% empty %}
+            <p class="text-muted" style="font-size:0.85rem;">No exams scheduled.</p>
+            {% endfor %}
+            <a href="{% url 'exam_schedule' %}" class="btn btn-sm btn-link p-0 mt-2" style="font-size:0.8rem;">View all →</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box">
+            <h6><i class="fas fa-tasks me-2 text-success"></i>Pending Assignments
+                <a href="{% url 'assignment_add' %}" class="btn btn-sm btn-outline-primary float-end" style="font-size:0.7rem;padding:0.2rem 0.5rem;">+ Add</a>
+            </h6>
+            {% for assignment in pending_assignments %}
+            <div class="assign-item">
+                <div>
+                    <div style="font-weight:600;color:#2d3748;">{{ assignment.title }}</div>
+                    <div style="font-size:0.75rem;color:#718096;">{{ assignment.course.name|default:"General" }}</div>
+                </div>
+                <span class="badge bg-warning text-dark" style="font-size:0.7rem;">{{ assignment.due_date|date:"M d" }}</span>
+            </div>
+            {% empty %}
+            <p class="text-muted" style="font-size:0.85rem;">No pending assignments.</p>
+            {% endfor %}
+            <a href="{% url 'assignments' %}" class="btn btn-sm btn-link p-0 mt-2" style="font-size:0.8rem;">View all →</a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card-box">
+            <h6><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h6>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus me-1"></i>Add Student</a>
+                <a href="{% url 'grade_add' %}" class="btn btn-success btn-sm"><i class="fas fa-star me-1"></i>Add Grade</a>
+                <a href="{% url 'attendance_mark' %}" class="btn btn-info btn-sm text-white"><i class="fas fa-clipboard-check me-1"></i>Mark Attendance</a>
+                <a href="{% url 'fee_report' %}" class="btn btn-warning btn-sm"><i class="fas fa-money-bill-wave me-1"></i>Fee Report</a>
+                <a href="{% url 'notice_add' %}" class="btn btn-secondary btn-sm"><i class="fas fa-bullhorn me-1"></i>Post Notice</a>
+                <a href="{% url 'timetable_add' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-calendar-alt me-1"></i>Add Timetable</a>
+                <a href="{% url 'exam_add' %}" class="btn btn-outline-danger btn-sm"><i class="fas fa-file-alt me-1"></i>Add Exam</a>
+                <a href="/admin/" class="btn btn-outline-dark btn-sm"><i class="fas fa-cog me-1"></i>Admin Panel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Students -->
+<div class="table-card">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="m-0" style="font-weight:700;color:#2d3748;"><i class="fas fa-users me-2 text-primary"></i>Recent Students</h6>
+        <a href="{% url 'students' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <table class="table table-hover mb-0">
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Branch</th><th>Fee Status</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in recent_students %}
+            <tr>
+                <td>{{ student.student_id|default:student.id }}</td>
+                <td>{{ student.user.get_full_name|default:student.user.username }}</td>
+                <td>{{ student.user.email }}</td>
+                <td>{{ student.branch.name|default:"N/A" }}</td>
+                <td>
+                    {% if student.fee_paid %}
+                        <span class="badge-paid">Paid</span>
+                    {% else %}
+                        <span class="badge-pending">Pending</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-primary" style="font-size:0.75rem;">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-3">No students added yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fee Chart
+    new Chart(document.getElementById('feeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Fee Paid', 'Fee Pending'],
+            datasets: [{
+                data: [{{ fee_paid_count }}, {{ fee_pending_count }}],
+                backgroundColor: ['#48bb78', '#fc8181'],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            cutout: '65%',
+        }
+    });
+
+    // Branch Chart
+    const branchLabels = [{% for b in branch_data %}'{{ b.name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    const branchCounts = [{% for b in branch_data %}{{ b.student_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    new Chart(document.getElementById('branchChart'), {
+        type: 'bar',
+        data: {
+            labels: branchLabels,
+            datasets: [{
+                label: 'Students',
+                data: branchCounts,
+                backgroundColor: '#667eea',
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{% if student %}Edit{% else %}Add{% endif %} Student{% endblock %}
+{% block page_title %}{% if student %}Edit Student{% else %}Add Student{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-md-8">
+<div class="bg-white rounded-3 shadow-sm p-4">
+    <h6 class="fw-bold mb-4">{% if student %}Edit{% else %}New{% endif %} Student</h6>
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ student.user.first_name|default:'' }}" required></div>
+            <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ student.user.last_name|default:'' }}"></div>
+            {% if not student %}
+            <div class="col-md-6"><label class="form-label">Username</label><input type="text" name="username" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+            {% endif %}
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="{{ student.user.email|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control" value="{{ student.phone|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Student ID</label><input type="text" name="student_id" class="form-control" value="{{ student.student_id|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Enrollment Date</label><input type="date" name="enrollment_date" class="form-control" value="{{ student.enrollment_date|default:'' }}"></div>
+            <div class="col-md-6">
+                <label class="form-label">Branch</label>
+                <select name="branch" class="form-select">
+                    <option value="">-- Select Branch --</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if student.branch.id == branch.id %}selected{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="fee_paid" id="fee_paid" {% if student.fee_paid %}checked{% endif %}>
+                    <label class="form-check-label" for="fee_paid">Fee Paid</label>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">{% if student %}Update{% else %}Add Student{% endif %}</button>
+            <a href="{% url 'students' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+{% endblock %}

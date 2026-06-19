@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Fee Report{% endblock %}
+{% block page_title %}Fee Collection Report{% endblock %}
+{% block extra_css %}
+<style>
+.fee-stat { background:white;border-radius:12px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-align:center; }
+.fee-stat .num { font-size:2rem;font-weight:700; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="fee-stat"><div class="num text-success">{{ fee_paid }}</div><div class="text-muted">Fee Paid</div></div></div>
+    <div class="col-md-4"><div class="fee-stat"><div class="num text-danger">{{ fee_pending }}</div><div class="text-muted">Fee Pending</div></div></div>
+    <div class="col-md-4"><div class="fee-stat"><div class="num text-primary">₹{{ total_collected }}</div><div class="text-muted">Total Collected</div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-5">
+        <div class="bg-white rounded-3 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Fee Status Chart</h6>
+            <canvas id="feeChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="bg-white rounded-3 shadow-sm p-3">
+            <h6 class="fw-bold mb-3 text-danger"><i class="fas fa-exclamation-circle me-2"></i>Pending Fee Students</h6>
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Student</th><th>Branch</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for s in pending_students %}
+                    <tr>
+                        <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+                        <td>{{ s.branch.name|default:"N/A" }}</td>
+                        <td><a href="{% url 'fee_pay' s.pk %}" class="btn btn-sm btn-success" style="font-size:0.75rem;">Pay Now</a></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="3" class="text-center text-muted">All fees are paid!</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <div class="p-3 border-bottom"><h6 class="fw-bold mb-0">Recent Payment History</h6></div>
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;"><tr><th>Student</th><th>Amount</th><th>Description</th><th>Date</th></tr></thead>
+        <tbody>
+            {% for p in fee_payments %}
+            <tr>
+                <td>{{ p.student.user.get_full_name|default:p.student.user.username }}</td>
+                <td class="text-success fw-bold">₹{{ p.amount }}</td>
+                <td>{{ p.description|default:"—" }}</td>
+                <td>{{ p.payment_date|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No payments recorded.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+new Chart(document.getElementById('feeChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Pending'],
+        datasets: [{ data: [{{ fee_paid }}, {{ fee_pending }}], backgroundColor: ['#48bb78','#fc8181'], borderWidth: 0 }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+});
+</script>
+{% endblock %}

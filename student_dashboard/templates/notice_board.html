@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Notice Board{% endblock %}
+{% block page_title %}Notice Board{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Notice Board</h5>
+    <a href="{% url 'notice_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Post Notice</a>
+</div>
+<div class="row g-3">
+    {% for notice in notices %}
+    <div class="col-md-6">
+        <div class="bg-white rounded-3 shadow-sm p-3 h-100" style="border-left:4px solid #667eea;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0">{{ notice.title }}</h6>
+                <small class="text-muted">{{ notice.posted_at|date:"M d, Y" }}</small>
+            </div>
+            <p style="font-size:0.875rem;color:#4a5568;margin:0;">{{ notice.content }}</p>
+            <div class="mt-2" style="font-size:0.75rem;color:#a0aec0;">Posted by: {{ notice.posted_by.get_full_name|default:notice.posted_by.username }}</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><div class="bg-white rounded-3 shadow-sm p-4 text-center text-muted">No notices posted yet. <a href="{% url 'notice_add' %}">Post one</a>.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

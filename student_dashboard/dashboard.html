@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Student Dashboard</h1>
+    <hr>
+    
+    <div class="row">
+        <!-- Academic Overview Card -->
+        <div class="col-md-6">
+            <div class="card shadow p-3 mb-4">
+                <h3>Academic Overview</h3>
+                <p>Welcome, {{ user.username }}!</p>
+                <!-- Add your dynamic data here later -->
+            </div>
+        </div>
+
+        <!-- Financial Status Card -->
+        <div class="col-md-6">
+            <div class="card shadow p-3 mb-4">
+                <h3>Financial Status</h3>
+                <p>Status: No fees due.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+.stat-card { background:white; border-radius:12px; padding:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center; border-top:4px solid; }
+.stat-num { font-size:1.75rem; font-weight:800; line-height:1.1; }
+.stat-lbl { font-size:0.72rem; color:#718096; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.25rem; }
+.box { background:white; border-radius:12px; padding:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.box-title { font-weight:700; color:#2d3748; font-size:0.875rem; margin-bottom:0.875rem; }
+</style>
+{% endblock %}
+{% block content %}
+
+{% if not student %}
+<div class="box text-center py-5">
+    <i class="fas fa-exclamation-triangle text-warning" style="font-size:3rem;"></i>
+    <h5 class="mt-3 fw-bold">Profile Not Set Up</h5>
+    <p class="text-muted">Your student profile hasn't been created yet. Please contact administration.</p>
+</div>
+{% else %}
+
+<!-- Stats -->
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-color:#667eea">
+            <div class="stat-num" style="color:#667eea">{{ avg_score }}%</div>
+            <div class="stat-lbl">Avg Grade</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-color:#48bb78">
+            <div class="stat-num" style="color:#48bb78">{{ att_pct }}%</div>
+            <div class="stat-lbl">Attendance</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-color:{% if student.fee_paid %}#48bb78{% else %}#fc8181{% endif %}">
+            <div class="stat-num" style="color:{% if student.fee_paid %}#48bb78{% else %}#fc8181{% endif %}; font-size:1.1rem;">
+                {% if student.fee_paid %}PAID{% else %}PENDING{% endif %}
+            </div>
+            <div class="stat-lbl">Fee Status</div>
+            <div class="mt-2">
+                {% if not student.fee_paid %}
+                <a href="{% url 'fee_pay' student.pk %}" class="btn btn-danger btn-sm" style="font-size:0.72rem;">Pay Now</a>
+                {% else %}
+                <a href="{% url 'fee_report' %}" class="btn btn-outline-success btn-sm" style="font-size:0.72rem;">View</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-color:#ed8936">
+            <div class="stat-num" style="color:#ed8936">{{ upcoming_exams|length }}</div>
+            <div class="stat-lbl">Upcoming Exams</div>
+        </div>
+    </div>
+</div>
+
+<!-- Grades & Attendance -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="box h-100">
+            <div class="box-title"><i class="fas fa-star me-2 text-warning"></i>My Grades</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">
+                    <thead style="background:#f7fafc;"><tr><th>Subject</th><th>Score</th><th>Max</th><th>%</th></tr></thead>
+                    <tbody>
+                        {% for g in grades %}
+                        <tr>
+                            <td>{{ g.subject }}</td>
+                            <td class="fw-bold">{{ g.score }}</td>
+                            <td>{{ g.max_score }}</td>
+                            <td>
+                                {% widthratio g.score g.max_score 100 as pct %}
+                                <div class="d-flex align-items-center gap-1">
+                                    <div class="progress flex-grow-1" style="height:5px;min-width:40px;">
+                                        <div class="progress-bar {% if pct >= 75 %}bg-success{% elif pct >= 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ pct }}%"></div>
+                                    </div>
+                                    <span>{{ pct }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No grades yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box h-100">
+            <div class="box-title"><i class="fas fa-clipboard-check me-2 text-info"></i>My Attendance</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">
+                    <thead style="background:#f7fafc;"><tr><th>Course</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for a in attendances|slice:":8" %}
+                        <tr>
+                            <td>{{ a.course.name }}</td>
+                            <td>{{ a.date|date:"M d, Y" }}</td>
+                            <td><span class="badge {% if a.status == 'present' %}bg-success{% elif a.status == 'late' %}bg-warning text-dark{% else %}bg-danger{% endif %}" style="font-size:0.68rem;">{{ a.get_status_display }}</span></td>
+                        </tr>
+                        {% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No records yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exams, Notices, Assignments -->
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="box h-100">
+            <div class="box-title"><i class="fas fa-file-alt me-2 text-danger"></i>Upcoming Exams</div>
+            {% for e in upcoming_exams %}
+            <div class="d-flex justify-content-between align-items-start py-2 border-bottom" style="font-size:0.82rem;">
+                <div><div class="fw-semibold">{{ e.exam_name }}</div><small class="text-muted">{{ e.course.name }}</small></div>
+                <div class="text-end flex-shrink-0 ms-2"><span class="badge bg-danger d-block">{{ e.exam_date|date:"M d" }}</span><small class="text-muted">{{ e.start_time|time:"H:i" }}</small></div>
+            </div>
+            {% empty %}<p class="text-muted mb-0" style="font-size:0.82rem;">No upcoming exams.</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="box h-100">
+            <div class="box-title"><i class="fas fa-bullhorn me-2 text-warning"></i>Notices</div>
+            {% for n in notices %}
+            <div class="py-2 border-bottom" style="font-size:0.82rem;">
+                <div class="fw-semibold">{{ n.title }}</div>
+                <div class="text-muted">{{ n.content|truncatechars:55 }}</div>
+                <small class="text-muted">{{ n.posted_at|date:"M d, Y" }}</small>
+            </div>
+            {% empty %}<p class="text-muted mb-0" style="font-size:0.82rem;">No notices.</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="box h-100">
+            <div class="box-title"><i class="fas fa-tasks me-2 text-success"></i>Assignments Due</div>
+            {% for a in assignments %}
+            <div class="d-flex justify-content-between align-items-start py-2 border-bottom" style="font-size:0.82rem;">
+                <div><div class="fw-semibold">{{ a.title }}</div><small class="text-muted">{{ a.course.name|default:"General" }}</small></div>
+                <span class="badge bg-warning text-dark flex-shrink-0 ms-2">{{ a.due_date|date:"M d" }}</span>
+            </div>
+            {% empty %}<p class="text-muted mb-0" style="font-size:0.82rem;">No assignments due.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Timetable -->
+{% if timetables %}
+<div class="box">
+    <div class="box-title"><i class="fas fa-calendar-alt me-2 text-primary"></i>My Timetable</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:0.82rem;">
+            <thead style="background:#f7fafc;"><tr><th>Day</th><th>Course</th><th>Time</th><th>Room</th></tr></thead>
+            <tbody>
+                {% for t in timetables %}
+                <tr><td>{{ t.day }}</td><td>{{ t.course.name }}</td><td>{{ t.start_time|time:"H:i" }} – {{ t.end_time|time:"H:i" }}</td><td>{{ t.room|default:"—" }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

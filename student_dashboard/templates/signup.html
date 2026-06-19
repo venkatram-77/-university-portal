@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - University Portal</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .signup-wrapper {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .signup-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 40%;
+        }
+
+        .signup-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .signup-left p {
+            font-size: 1rem;
+            opacity: 0.9;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .signup-left i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .signup-right {
+            padding: 2.5rem 2.5rem;
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .signup-right h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #764ba2;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #f5c6cb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #c3e6cb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .signup-wrapper {
+                flex-direction: column;
+                min-height: auto;
+            }
+
+            .signup-left {
+                width: 100%;
+                padding: 2rem 1.5rem;
+            }
+
+            .signup-right {
+                width: 100%;
+                padding: 2rem 1.5rem;
+                max-height: none;
+            }
+
+            .signup-left h1 {
+                font-size: 2rem;
+            }
+
+            .signup-left i {
+                font-size: 3rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-wrapper">
+            <!-- Left Section -->
+            <div class="signup-left d-none d-md-flex">
+                <div class="text-center">
+                    <i class="fas fa-user-check"></i>
+                    <h1>Join Us</h1>
+                    <p>Create your account and get access to your academic information, courses, and more.</p>
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div class="signup-right">
+                <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags %}{{ message.tags }}{% endif %} alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if error %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ error }}</span>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Name Fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_first_name">
+                                <i class="fas fa-user"></i> First Name
+                            </label>
+                            <input
+                                type="text"
+                                id="id_first_name"
+                                name="first_name"
+                                placeholder="First name"
+                                value="{{ first_name }}"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="id_last_name">
+                                <i class="fas fa-user"></i> Last Name
+                            </label>
+                            <input
+                                type="text"
+                                id="id_last_name"
+                                name="last_name"
+                                placeholder="Last name"
+                                value="{{ last_name }}"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="id_username">
+                            <i class="fas fa-at"></i> Username
+                        </label>
+                        <input
+                            type="text"
+                            id="id_username"
+                            name="username"
+                            placeholder="Choose a username"
+                            required
+                            value="{{ username }}"
+                        >
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="id_email">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input
+                            type="email"
+                            id="id_email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required
+                            value="{{ email }}"
+                        >
+                    </div>
+
+                    <!-- Password Fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_password">
+                                <i class="fas fa-lock"></i> Password
+                            </label>
+                            <input
+                                type="password"
+                                id="id_password"
+                                name="password"
+                                placeholder="Enter password"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="id_confirm_password">
+                                <i class="fas fa-lock"></i> Confirm Password
+                            </label>
+                            <input
+                                type="password"
+                                id="id_confirm_password"
+                                name="confirm_password"
+                                placeholder="Confirm password"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Sign Up Button -->
+                    <button type="submit" class="btn-signup">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <!-- Login Link -->
+                <div class="login-link">
+                    Already have an account? <a href="{% url 'login' %}">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Attendance Records</h5>
+    <a href="{% url 'attendance_mark' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Mark Attendance</a>
+</div>
+
+<div class="bg-white rounded-3 shadow-sm p-3 mb-3">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
+        <div>
+            <label class="form-label mb-1" style="font-size:0.8rem;">Course</label>
+            <select name="course" class="form-select form-select-sm">
+                <option value="">All Courses</option>
+                {% for c in courses %}<option value="{{ c.id }}" {% if selected_course == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label mb-1" style="font-size:0.8rem;">Date</label>
+            <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date|default:'' }}">
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+    </form>
+</div>
+
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;">
+            <tr><th>Student</th><th>Course</th><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for att in attendance_list %}
+            <tr>
+                <td>{{ att.student.user.get_full_name|default:att.student.user.username }}</td>
+                <td>{{ att.course.name }}</td>
+                <td>{{ att.date }}</td>
+                <td><span class="badge {% if att.status == 'present' %}bg-success{% elif att.status == 'late' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ att.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No attendance records found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block page_title %}Faculty Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+.stat-card { background:white; border-radius:12px; padding:1.25rem 1rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid; }
+.stat-num { font-size:2rem; font-weight:800; color:#2d3748; line-height:1.1; }
+.stat-lbl { font-size:0.72rem; color:#718096; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.2rem; }
+.box { background:white; border-radius:12px; padding:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-card" style="border-color:#38a169"><div class="stat-num text-success">{{ total_students }}</div><div class="stat-lbl">Total Students</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card" style="border-color:#667eea"><div class="stat-num" style="color:#667eea">{{ recent_grades|length }}</div><div class="stat-lbl">Grades Entered</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card" style="border-color:#ed8936"><div class="stat-num text-warning">{{ recent_attendance|length }}</div><div class="stat-lbl">Attendance Marked</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card" style="border-color:#fc8181"><div class="stat-num text-danger">{{ upcoming_exams|length }}</div><div class="stat-lbl">Upcoming Exams</div></div></div>
+</div>
+
+<div class="box mb-3">
+    <div style="font-weight:700;color:#2d3748;font-size:0.875rem;margin-bottom:0.75rem;"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'grade_add' %}" class="btn btn-success btn-sm"><i class="fas fa-star me-1"></i>Add Grade</a>
+        <a href="{% url 'attendance_mark' %}" class="btn btn-info btn-sm text-white"><i class="fas fa-clipboard-check me-1"></i>Mark Attendance</a>
+        <a href="{% url 'assignment_add' %}" class="btn btn-warning btn-sm"><i class="fas fa-tasks me-1"></i>Add Assignment</a>
+        <a href="{% url 'exam_add' %}" class="btn btn-danger btn-sm"><i class="fas fa-file-alt me-1"></i>Add Exam</a>
+        <a href="{% url 'notice_add' %}" class="btn btn-secondary btn-sm"><i class="fas fa-bullhorn me-1"></i>Post Notice</a>
+        <a href="{% url 'students' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-users me-1"></i>View Students</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="box h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="font-weight:700;font-size:0.875rem;"><i class="fas fa-star me-2 text-warning"></i>Recent Grades</span>
+                <a href="{% url 'grade_add' %}" class="btn btn-outline-success btn-sm" style="font-size:0.75rem;">+ Add</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">
+                    <thead style="background:#f7fafc;"><tr><th>Student</th><th>Subject</th><th>Score</th></tr></thead>
+                    <tbody>
+                        {% for g in recent_grades %}
+                        <tr><td>{{ g.student.user.get_full_name|default:g.student.user.username }}</td><td>{{ g.subject }}</td><td class="fw-bold">{{ g.score }}/{{ g.max_score }}</td></tr>
+                        {% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No grades entered yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'grades' %}" class="d-block mt-2" style="font-size:0.78rem;">View all →</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="font-weight:700;font-size:0.875rem;"><i class="fas fa-clipboard-check me-2 text-info"></i>Recent Attendance</span>
+                <a href="{% url 'attendance_mark' %}" class="btn btn-outline-info btn-sm" style="font-size:0.75rem;">+ Mark</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0" style="font-size:0.82rem;">
+                    <thead style="background:#f7fafc;"><tr><th>Student</th><th>Course</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for a in recent_attendance %}
+                        <tr>
+                            <td>{{ a.student.user.get_full_name|default:a.student.user.username }}</td>
+                            <td>{{ a.course.name }}</td>
+                            <td><span class="badge {% if a.status == 'present' %}bg-success{% elif a.status == 'late' %}bg-warning text-dark{% else %}bg-danger{% endif %}" style="font-size:0.68rem;">{{ a.get_status_display }}</span></td>
+                            <td>{{ a.date|date:"M d" }}</td>
+                        </tr>
+                        {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No attendance marked yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'attendance' %}" class="d-block mt-2" style="font-size:0.78rem;">View all →</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box">
+            <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem;"><i class="fas fa-file-alt me-2 text-danger"></i>Upcoming Exams</div>
+            {% for e in upcoming_exams %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="font-size:0.82rem;">
+                <div><div class="fw-semibold">{{ e.exam_name }}</div><small class="text-muted">{{ e.course.name }}</small></div>
+                <span class="badge bg-danger flex-shrink-0 ms-2">{{ e.exam_date|date:"M d" }}</span>
+            </div>
+            {% empty %}<p class="text-muted mb-0" style="font-size:0.82rem;">No upcoming exams.</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box">
+            <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem;"><i class="fas fa-tasks me-2 text-success"></i>My Assignments</div>
+            {% for a in pending_assignments %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="font-size:0.82rem;">
+                <div><div class="fw-semibold">{{ a.title }}</div><small class="text-muted">{{ a.course.name|default:"General" }}</small></div>
+                <span class="badge bg-warning text-dark flex-shrink-0 ms-2">Due {{ a.due_date|date:"M d" }}</span>
+            </div>
+            {% empty %}<p class="text-muted mb-0" style="font-size:0.82rem;">No pending assignments.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

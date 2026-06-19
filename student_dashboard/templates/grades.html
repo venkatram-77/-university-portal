@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Grades{% endblock %}
+{% block page_title %}Grades Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Grades</h5>
+    <a href="{% url 'grade_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Grade</a>
+</div>
+
+<div class="bg-white rounded-3 shadow-sm p-3 mb-3">
+    <form method="get" class="d-flex gap-2 align-items-end flex-wrap">
+        <div>
+            <label class="form-label mb-1" style="font-size:0.8rem;">Filter by Student</label>
+            <select name="student" class="form-select form-select-sm">
+                <option value="">All Students</option>
+                {% for s in students %}<option value="{{ s.id }}" {% if selected_student == s.id|stringformat:"s" %}selected{% endif %}>{{ s.user.get_full_name|default:s.user.username }}</option>{% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+    </form>
+</div>
+
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;">
+            <tr><th>Student</th><th>Subject</th><th>Score</th><th>Max Score</th><th>Percentage</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for grade in grades %}
+            <tr>
+                <td>{{ grade.student.user.get_full_name|default:grade.student.user.username }}</td>
+                <td>{{ grade.subject }}</td>
+                <td><strong>{{ grade.score }}</strong></td>
+                <td>{{ grade.max_score }}</td>
+                <td>
+                    {% widthratio grade.score grade.max_score 100 as pct %}
+                    <div class="progress" style="height:6px;width:80px;display:inline-block;vertical-align:middle;">
+                        <div class="progress-bar {% if pct >= 75 %}bg-success{% elif pct >= 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ pct }}%"></div>
+                    </div>
+                    <span style="font-size:0.8rem;margin-left:5px;">{{ pct }}%</span>
+                </td>
+                <td>{{ grade.date_recorded|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No grades recorded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

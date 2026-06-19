@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Faculty{% endblock %}
+{% block page_title %}Faculty Management{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Faculty Members</h5>
+    <a href="{% url 'faculty_add' %}" class="btn btn-success btn-sm"><i class="fas fa-plus me-1"></i>Add Faculty</a>
+</div>
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;font-size:0.8rem;"><tr><th>Name</th><th>Employee ID</th><th>Department</th><th>Email</th><th>Phone</th><th>Action</th></tr></thead>
+        <tbody>
+            {% for f in faculty_list %}
+            <tr style="font-size:0.875rem;">
+                <td><div class="fw-bold">{{ f.user.get_full_name|default:f.user.username }}</div><small class="text-muted">@{{ f.user.username }}</small></td>
+                <td>{{ f.employee_id|default:"—" }}</td>
+                <td>{{ f.department|default:"—" }}</td>
+                <td>{{ f.user.email }}</td>
+                <td>{{ f.phone|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'faculty_delete' f.pk %}" class="btn btn-sm btn-outline-danger" style="font-size:0.75rem;">Delete</a>
+                </td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No faculty added yet.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

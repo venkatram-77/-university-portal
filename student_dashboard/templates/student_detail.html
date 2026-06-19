@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ student.user.get_full_name }} - Student Detail{% endblock %}
+{% block page_title %}Student Detail{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">{{ student.user.get_full_name|default:student.user.username }}</h5>
+    <div class="d-flex gap-2">
+        <a href="{% url 'student_edit' student.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit me-1"></i>Edit</a>
+        <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>Delete</a>
+        <a href="{% url 'students' %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="p-3 bg-white rounded-3 shadow-sm text-center"><div style="font-size:2rem;color:#667eea;"><i class="fas fa-user-circle"></i></div><h6 class="mt-2 mb-0">{{ student.user.get_full_name|default:student.user.username }}</h6><small class="text-muted">{{ student.branch.name|default:"No Branch" }}</small></div></div>
+    <div class="col-md-3"><div class="p-3 bg-white rounded-3 shadow-sm"><div class="text-muted" style="font-size:0.8rem;">AVG GRADE</div><div style="font-size:2rem;font-weight:700;color:#48bb78;">{{ avg_score }}%</div></div></div>
+    <div class="col-md-3"><div class="p-3 bg-white rounded-3 shadow-sm"><div class="text-muted" style="font-size:0.8rem;">ATTENDANCE</div><div style="font-size:2rem;font-weight:700;color:#667eea;">{{ attendance_pct }}%</div></div></div>
+    <div class="col-md-3"><div class="p-3 bg-white rounded-3 shadow-sm"><div class="text-muted" style="font-size:0.8rem;">TOTAL FEE PAID</div><div style="font-size:2rem;font-weight:700;color:#ed8936;">₹{{ total_paid }}</div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="bg-white rounded-3 shadow-sm p-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Info</h6>
+            <table class="table table-sm table-borderless mb-0" style="font-size:0.875rem;">
+                <tr><td class="text-muted">Student ID</td><td>{{ student.student_id|default:student.id }}</td></tr>
+                <tr><td class="text-muted">Email</td><td>{{ student.user.email }}</td></tr>
+                <tr><td class="text-muted">Phone</td><td>{{ student.phone|default:"N/A" }}</td></tr>
+                <tr><td class="text-muted">Enrolled</td><td>{{ student.enrollment_date|date:"M d, Y"|default:"N/A" }}</td></tr>
+                <tr><td class="text-muted">Fee Status</td><td>{% if student.fee_paid %}<span class="badge bg-success">Paid</span>{% else %}<span class="badge bg-danger">Pending</span>{% endif %}</td></tr>
+            </table>
+            {% if not student.fee_paid %}
+            <a href="{% url 'fee_pay' student.pk %}" class="btn btn-sm btn-success mt-2 w-100"><i class="fas fa-money-bill-wave me-1"></i>Mark Fee Paid</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="bg-white rounded-3 shadow-sm p-3">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="fw-bold mb-0"><i class="fas fa-star me-2 text-warning"></i>Grades</h6>
+                <a href="{% url 'grade_add' %}" class="btn btn-sm btn-outline-primary" style="font-size:0.75rem;">+ Add</a>
+            </div>
+            {% for grade in grades %}
+            <div class="d-flex justify-content-between py-1 border-bottom" style="font-size:0.875rem;">
+                <span>{{ grade.subject }}</span>
+                <span class="fw-bold">{{ grade.score }}/{{ grade.max_score }}</span>
+            </div>
+            {% empty %}<p class="text-muted" style="font-size:0.85rem;">No grades recorded.</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="bg-white rounded-3 shadow-sm p-3">
+            <h6 class="fw-bold mb-3"><i class="fas fa-clipboard-check me-2 text-info"></i>Attendance</h6>
+            {% for att in attendances %}
+            <div class="d-flex justify-content-between py-1 border-bottom" style="font-size:0.875rem;">
+                <span>{{ att.course.name }} - {{ att.date }}</span>
+                <span class="badge {% if att.status == 'present' %}bg-success{% elif att.status == 'late' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ att.status }}</span>
+            </div>
+            {% empty %}<p class="text-muted" style="font-size:0.85rem;">No attendance records.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

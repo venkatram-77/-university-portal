@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Courses - University Portal{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="page-header">
+        <h1>Courses</h1>
+        <p>Browse all available courses</p>
+    </div>
+
+    <div class="filters">
+        <form method="get" class="filter-form">
+            <label>Filter by Branch:</label>
+            <select name="branch" onchange="this.form.submit()">
+                <option value="">All Branches</option>
+                {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == selected_branch %}selected{% endif %}>
+                        {{ branch.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="courses-grid">
+        {% for course in courses %}
+        <div class="course-card">
+            <div class="course-header">
+                <h3>{{ course.name }}</h3>
+                <span class="course-code">{{ course.code }}</span>
+            </div>
+            <div class="course-body">
+                <p><strong>Branch:</strong> {{ course.branch.name }}</p>
+                <p><strong>Credits:</strong> {{ course.credits }}</p>
+                <p class="description">{{ course.description|default:"No description available" }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            <p>No courses found</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 3px solid #3498db;
+    }
+
+    .page-header h1 {
+        color: #2c3e50;
+        font-size: 2rem;
+    }
+
+    .filters {
+        margin-bottom: 2rem;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .filter-form select {
+        padding: 0.5rem;
+        border: 1px solid #bdc3c7;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .course-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .course-header {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .course-header h3 {
+        margin: 0;
+    }
+
+    .course-code {
+        background: rgba(255, 255, 255, 0.3);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .course-body {
+        padding: 1.5rem;
+    }
+
+    .course-body p {
+        margin: 0.5rem 0;
+        color: #34495e;
+    }
+
+    .description {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #95a5a6;
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+{% endblock %}

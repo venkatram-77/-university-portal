@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Pay Fee{% endblock %}
+{% block page_title %}Fee Payment{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-md-5">
+<div class="bg-white rounded-3 shadow-sm p-4">
+
+    <div class="text-center mb-4">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#48bb78,#276749);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.8rem;color:white;">
+            <i class="fas fa-credit-card"></i>
+        </div>
+        <h5 class="fw-bold mb-1">Fee Payment</h5>
+        <p class="text-muted" style="font-size:0.875rem;">
+            Student: <strong>{{ student.user.get_full_name|default:student.user.username }}</strong><br>
+            ID: <strong>{{ student.student_id|default:student.id }}</strong>
+        </p>
+    </div>
+
+    {% if student.fee_paid %}
+    <div class="alert alert-success text-center">
+        <i class="fas fa-check-circle me-2"></i>
+        Fee has already been paid for this student.
+    </div>
+    <a href="{% url 'fee_report' %}" class="btn btn-outline-secondary w-100">Back to Fee Page</a>
+    {% else %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Amount (₹)</label>
+            <div class="input-group">
+                <span class="input-group-text">₹</span>
+                <input type="number" name="amount" class="form-control form-control-lg"
+                       step="0.01" min="1" placeholder="Enter amount" required>
+            </div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Description</label>
+            <input type="text" name="description" class="form-control"
+                   placeholder="e.g. Semester 1 Tuition Fee">
+        </div>
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg fw-bold">
+                <i class="fas fa-check me-2"></i>Confirm Payment
+            </button>
+            <a href="{% url 'fee_report' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+    {% endif %}
+
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Exam Schedule{% endblock %}
+{% block page_title %}Exam Schedule{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Exam Schedule</h5>
+    <a href="{% url 'exam_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Exam</a>
+</div>
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;"><tr><th>Exam</th><th>Course</th><th>Date</th><th>Time</th><th>Room</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for exam in exams %}
+            <tr>
+                <td class="fw-bold">{{ exam.exam_name }}</td>
+                <td>{{ exam.course.name }}</td>
+                <td>{{ exam.exam_date|date:"M d, Y" }}</td>
+                <td>{{ exam.start_time|time:"H:i" }} - {{ exam.end_time|time:"H:i" }}</td>
+                <td>{{ exam.room|default:"—" }}</td>
+                <td>
+                    {% if exam.exam_date < today %}
+                        <span class="badge bg-secondary">Completed</span>
+                    {% else %}
+                        <span class="badge bg-danger">Upcoming</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No exams scheduled.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}University Portal{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .sidebar {
+            width: 250px; position: fixed; left: 0; top: 0; bottom: 0;
+            background: linear-gradient(180deg, #1a1f2e 0%, #2d3748 100%);
+            overflow-y: auto; z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column;
+        }
+        .sidebar-brand {
+            padding: 1.25rem; background: rgba(0,0,0,0.25);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-brand .brand-name { font-weight: 700; color: #fff; font-size: 0.95rem; }
+        .role-badge-sidebar {
+            display: inline-block; padding: 0.2rem 0.6rem;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 0.3rem;
+        }
+        .role-admin { background: rgba(229,62,62,0.2); color: #fc8181; }
+        .role-faculty { background: rgba(56,161,105,0.2); color: #68d391; }
+        .role-student { background: rgba(102,126,234,0.2); color: #90cdf4; }
+        .sidebar-section {
+            padding: 0.875rem 1rem 0.25rem;
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1.5px; color: #4a5568; font-weight: 700;
+        }
+        .sidebar .nav-link {
+            color: #a0aec0; padding: 0.55rem 1rem;
+            margin: 0.1rem 0.5rem; border-radius: 8px;
+            font-size: 0.85rem; display: flex; align-items: center;
+            gap: 0.6rem; transition: all 0.2s; text-decoration: none;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(102,126,234,0.25); color: #fff;
+        }
+        .sidebar .nav-link i { width: 16px; text-align: center; }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.08); margin-top: auto; }
+        .main-content { margin-left: 250px; min-height: 100vh; display: flex; flex-direction: column; }
+        .topbar {
+            background: white; padding: 0.75rem 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar-title { font-weight: 700; color: #2d3748; font-size: 1rem; margin: 0; }
+        .user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.8rem; color: white;
+        }
+        .avatar-admin { background: linear-gradient(135deg, #e53e3e, #c53030); }
+        .avatar-faculty { background: linear-gradient(135deg, #38a169, #276749); }
+        .avatar-student { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .content-area { padding: 1.5rem; flex: 1; }
+        footer { background: #2d3748; color: #718096; text-align: center; padding: 0.875rem; font-size: 0.8rem; }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: relative; height: auto; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% with role=request.user.role.role|default:"student" %}
+
+<!-- Sidebar -->
+<nav class="sidebar d-none d-md-flex">
+    <div>
+        <div class="sidebar-brand">
+            <div class="brand-name"><i class="fas fa-university me-2"></i>University Portal</div>
+            <span class="role-badge-sidebar role-{{ role }}">
+                {% if role == 'admin' %}<i class="fas fa-user-shield me-1"></i>Administrator
+                {% elif role == 'faculty' %}<i class="fas fa-chalkboard-teacher me-1"></i>Faculty
+                {% else %}<i class="fas fa-user-graduate me-1"></i>Student{% endif %}
+            </span>
+        </div>
+
+        <!-- ADMIN MENU -->
+        {% if role == 'admin' %}
+        <div class="sidebar-section">Overview</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        </ul>
+        <div class="sidebar-section">People</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'students' %}"><i class="fas fa-users"></i> Students</a></li>
+            <li><a class="nav-link" href="{% url 'student_add' %}"><i class="fas fa-user-plus"></i> Add Student</a></li>
+            <li><a class="nav-link" href="{% url 'faculty_list' %}"><i class="fas fa-chalkboard-teacher"></i> Faculty</a></li>
+            <li><a class="nav-link" href="{% url 'faculty_add' %}"><i class="fas fa-user-tie"></i> Add Faculty</a></li>
+        </ul>
+        <div class="sidebar-section">Academic</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'courses' %}"><i class="fas fa-book"></i> Courses</a></li>
+            <li><a class="nav-link" href="{% url 'branches' %}"><i class="fas fa-code-branch"></i> Branches</a></li>
+            <li><a class="nav-link" href="{% url 'grades' %}"><i class="fas fa-star"></i> Grades</a></li>
+            <li><a class="nav-link" href="{% url 'attendance' %}"><i class="fas fa-clipboard-check"></i> Attendance</a></li>
+            <li><a class="nav-link" href="{% url 'timetable' %}"><i class="fas fa-calendar-alt"></i> Timetable</a></li>
+            <li><a class="nav-link" href="{% url 'exam_schedule' %}"><i class="fas fa-file-alt"></i> Exams</a></li>
+            <li><a class="nav-link" href="{% url 'assignments' %}"><i class="fas fa-tasks"></i> Assignments</a></li>
+        </ul>
+        <div class="sidebar-section">Finance</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'fee_report' %}"><i class="fas fa-money-bill-wave"></i> Fee Report</a></li>
+        </ul>
+        <div class="sidebar-section">Communication</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'notice_board' %}"><i class="fas fa-bullhorn"></i> Notices</a></li>
+            <li><a class="nav-link" href="{% url 'events' %}"><i class="fas fa-calendar-day"></i> Events</a></li>
+        </ul>
+        <div class="sidebar-section">System</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="/admin/"><i class="fas fa-cog"></i> Admin Panel</a></li>
+        </ul>
+
+        <!-- FACULTY MENU -->
+        {% elif role == 'faculty' %}
+        <div class="sidebar-section">Overview</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        </ul>
+        <div class="sidebar-section">Students</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'students' %}"><i class="fas fa-users"></i> All Students</a></li>
+        </ul>
+        <div class="sidebar-section">Manage</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'grades' %}"><i class="fas fa-star"></i> Grades</a></li>
+            <li><a class="nav-link" href="{% url 'grade_add' %}"><i class="fas fa-plus-circle"></i> Add Grade</a></li>
+            <li><a class="nav-link" href="{% url 'attendance' %}"><i class="fas fa-clipboard-check"></i> Attendance</a></li>
+            <li><a class="nav-link" href="{% url 'attendance_mark' %}"><i class="fas fa-check-square"></i> Mark Attendance</a></li>
+            <li><a class="nav-link" href="{% url 'assignments' %}"><i class="fas fa-tasks"></i> Assignments</a></li>
+            <li><a class="nav-link" href="{% url 'assignment_add' %}"><i class="fas fa-plus"></i> Add Assignment</a></li>
+            <li><a class="nav-link" href="{% url 'timetable' %}"><i class="fas fa-calendar-alt"></i> Timetable</a></li>
+            <li><a class="nav-link" href="{% url 'exam_schedule' %}"><i class="fas fa-file-alt"></i> Exams</a></li>
+        </ul>
+        <div class="sidebar-section">Communication</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'notice_board' %}"><i class="fas fa-bullhorn"></i> Notices</a></li>
+            <li><a class="nav-link" href="{% url 'events' %}"><i class="fas fa-calendar-day"></i> Events</a></li>
+        </ul>
+
+        <!-- STUDENT MENU -->
+        {% else %}
+        <div class="sidebar-section">Overview</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> My Dashboard</a></li>
+        </ul>
+        <div class="sidebar-section">My Academics</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'students' %}"><i class="fas fa-users"></i> Students</a></li>
+            <li><a class="nav-link" href="{% url 'courses' %}"><i class="fas fa-book"></i> My Courses</a></li>
+            <li><a class="nav-link" href="{% url 'timetable' %}"><i class="fas fa-calendar-alt"></i> Timetable</a></li>
+            <li><a class="nav-link" href="{% url 'exam_schedule' %}"><i class="fas fa-file-alt"></i> Exam Schedule</a></li>
+            <li><a class="nav-link" href="{% url 'assignments' %}"><i class="fas fa-tasks"></i> Assignments</a></li>
+        </ul>
+        <div class="sidebar-section">My Records</div>
+        <ul class="nav flex-column">
+            <li><a class="nav-link" href="{% url 'fee_report' %}"><i class="fas fa-money-bill-wave"></i> My Fees</a></li>
+            <li><a class="nav-link" href="{% url 'notice_board' %}"><i class="fas fa-bullhorn"></i> Notices</a></li>
+            <li><a class="nav-link" href="{% url 'events' %}"><i class="fas fa-calendar-day"></i> Events</a></li>
+        </ul>
+        {% endif %}
+    </div>
+
+    <div class="sidebar-footer">
+        <a class="nav-link" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> Profile</a>
+        <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<div class="main-content">
+    <div class="topbar">
+        <h6 class="topbar-title">{% block page_title %}University Portal{% endblock %}</h6>
+        <div class="user-info">
+            <div class="avatar avatar-{{ role }}">{{ request.user.username|first|upper }}</div>
+            <div>
+                <div style="font-size:0.85rem;font-weight:600;color:#2d3748;">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div style="font-size:0.7rem;color:#718096;text-transform:capitalize;">{{ role }}</div>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger ms-2" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+    <div class="content-area">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 University Portal — Logged in as <strong>{{ request.user.username }}</strong> ({{ role }})
+</footer>
+
+{% endwith %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

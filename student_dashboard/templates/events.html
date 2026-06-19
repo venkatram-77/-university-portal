@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Events{% endblock %}
+{% block page_title %}Events Calendar{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Events</h5>
+    <a href="{% url 'event_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Event</a>
+</div>
+<div class="row g-3">
+    {% for event in events %}
+    <div class="col-md-4">
+        <div class="bg-white rounded-3 shadow-sm p-3 h-100">
+            <div class="d-flex gap-3 align-items-start">
+                <div style="background:{% if event.event_date >= today %}#667eea{% else %}#a0aec0{% endif %};color:white;border-radius:10px;padding:0.6rem 0.8rem;text-align:center;min-width:50px;">
+                    <div style="font-size:1.3rem;font-weight:700;line-height:1;">{{ event.event_date|date:"d" }}</div>
+                    <div style="font-size:0.7rem;">{{ event.event_date|date:"M Y" }}</div>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">{{ event.title }}</h6>
+                    {% if event.location %}<div style="font-size:0.8rem;color:#718096;"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</div>{% endif %}
+                    <p style="font-size:0.85rem;color:#4a5568;margin-top:0.5rem;margin-bottom:0;">{{ event.description|default:"" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><div class="bg-white rounded-3 shadow-sm p-4 text-center text-muted">No events yet. <a href="{% url 'event_add' %}">Add one</a>.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}
