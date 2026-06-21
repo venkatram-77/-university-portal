@@ -120,6 +120,18 @@ DATABASES = {
     }
 }
 
+# If a DATABASE_URL environment variable is provided (e.g. Railway Postgres),
+# configure the default database from that URL. Otherwise, use the default
+# local SQLite database.
+try:
+    import dj_database_url
+except Exception:
+    dj_database_url = None
+
+db_url = os.getenv('DATABASE_URL')
+if db_url and dj_database_url:
+    DATABASES['default'] = dj_database_url.config(default=db_url, conn_max_age=600)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
