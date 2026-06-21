@@ -24,6 +24,7 @@ class Student(models.Model):
     fee_paid = models.BooleanField(default=False)
     student_id = models.CharField(max_length=20, blank=True, default='')
     enrollment_date = models.DateField(null=True, blank=True, default=None)
+    approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -152,6 +153,7 @@ class Faculty(models.Model):
     department = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     joined_date = models.DateField(null=True, blank=True)
+    approved = models.BooleanField(default=False)
     courses = models.ManyToManyField(Course, blank=True, related_name='faculty_members')
 
     def __str__(self):

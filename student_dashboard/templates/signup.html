@@ -244,6 +244,12 @@
                         <span>{{ error }}</span>
                     </div>
                 {% endif %}
+                {% if success %}
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ success }}</span>
+                    </div>
+                {% endif %}
 
                 <form method="post">
                     {% csrf_token %}
@@ -306,6 +312,52 @@
                         >
                     </div>
 
+                    <!-- Phone Field -->
+                    <div class="form-group">
+                        <label for="id_phone">
+                            <i class="fas fa-phone"></i> Phone
+                        </label>
+                        <input
+                            type="text"
+                            id="id_phone"
+                            name="phone"
+                            placeholder="Enter your phone number"
+                            value="{{ phone|default:'' }}"
+                        >
+                    </div>
+
+                    <!-- Role Field -->
+                    <div class="form-group">
+                        <label for="id_role">
+                            <i class="fas fa-users"></i> Role
+                        </label>
+                        <select id="id_role" name="role" class="form-control" onchange="toggleSecret()">
+                            <option value="student" {% if role == 'student' %}selected{% endif %}>Student</option>
+                            <option value="faculty" {% if role == 'faculty' %}selected{% endif %}>Faculty</option>
+                            <option value="admin" {% if role == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                        <div class="form-text mt-1" style="font-size:0.78rem; color:#718096;">
+                            Admin and faculty require a setup code from your institution.
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="secretSection" style="display:none;">
+                        <label for="id_secret_code">
+                            <i class="fas fa-key"></i> Setup Code
+                        </label>
+                        <input
+                            type="password"
+                            id="id_secret_code"
+                            name="secret_code"
+                            placeholder="Enter the setup code"
+                            class="form-control"
+                            value="{{ secret_code|default:'' }}"
+                        >
+                        <div class="form-text mt-1" style="font-size:0.78rem; color:#718096;">
+                            Enter the institution-provided code to register as faculty or admin.
+                        </div>
+                    </div>
+
                     <!-- Password Fields -->
                     <div class="form-row">
                         <div class="form-group">
@@ -349,5 +401,21 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSecret() {
+            const role = document.getElementById('id_role').value;
+            const secretSection = document.getElementById('secretSection');
+            secretSection.style.display = role === 'faculty' || role === 'admin' ? 'block' : 'none';
+        }
+        window.addEventListener('DOMContentLoaded', toggleSecret);
+    </script>
+    <script>
+        function toggleSecret() {
+            const role = document.getElementById('id_role').value;
+            const secretSection = document.getElementById('secretSection');
+            secretSection.style.display = role === 'faculty' || role === 'admin' ? 'block' : 'none';
+        }
+        window.addEventListener('DOMContentLoaded', toggleSecret);
+    </script>
 </body>
 </html>

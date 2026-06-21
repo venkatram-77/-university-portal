@@ -10,24 +10,61 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+import socket
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env for local development
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    'django-insecure-l7o!(v&6ao9g-+&kvp(22cm#u3c0(35v_+aa5%f2!#w5+w1p^x'
-)
-
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-l7o!(v&6ao9g-+&kvp(22cm#u3c0(35v_+aa5%f2!#w5+w1p^x')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,yourdomain.com,www.yourdomain.com').split(',')
+public_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+CSRF_TRUSTED_ORIGINS = [public_domain] if public_domain else ['http://localhost', 'http://127.0.0.1:8000']
+
+# When developing locally (DEBUG=True) add the machine LAN IP so mobile devices
+# on the same network can reach the dev server without CSRF 403 errors.
+def _get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # doesn't actually send packets; used only to determine outbound IP
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        try:
+            s.close()
+        except Exception:
+            pass
+    return ip
+
+if DEBUG:
+    local_ip = _get_local_ip()
+    local_origin = f'http://{local_ip}:8000'
+    if local_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(local_origin)
+    try:
+        if isinstance(ALLOWED_HOSTS, (list, tuple)):
+            if local_ip not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(local_ip)
+        else:
+            ALLOWED_HOSTS = [local_ip]
+    except NameError:
+        ALLOWED_HOSTS = [local_ip]
 
 
 # Application definition
@@ -44,6 +81,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,7 +124,20 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = []
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 
 # Internationalization
@@ -106,6 +157,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -114,6 +166,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 
-# Email backend - prints to console (no SMTP needed)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email backend
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 DEFAULT_FROM_EMAIL = 'noreply@university.com'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.yourdomain.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+

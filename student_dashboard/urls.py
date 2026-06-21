@@ -15,6 +15,7 @@ urlpatterns = [
     path('faculty/', views.faculty_list, name='faculty_list'),
     path('faculty/add/', views.faculty_add, name='faculty_add'),
     path('faculty/<int:pk>/delete/', views.faculty_delete, name='faculty_delete'),
+    path('faculty/<int:pk>/approve/', views.faculty_approve, name='faculty_approve'),
 
     # Students
     path('students/', views.students, name='students'),
@@ -22,6 +23,7 @@ urlpatterns = [
     path('students/<int:pk>/', views.student_detail, name='student_detail'),
     path('students/<int:pk>/edit/', views.student_edit, name='student_edit'),
     path('students/<int:pk>/delete/', views.student_delete, name='student_delete'),
+    path('students/<int:pk>/approve/', views.student_approve, name='student_approve'),
 
     # Academic
     path('courses/', views.courses, name='courses'),

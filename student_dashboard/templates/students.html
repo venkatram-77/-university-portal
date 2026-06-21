@@ -82,11 +82,21 @@
                         <span class="badge-pending"><i class="fas fa-clock me-1"></i>Pending</span>
                     {% endif %}
                 </td>
+                <td>
+                    {% if student.approved %}
+                        <span class="badge bg-success" style="font-size:0.75rem;">Approved</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark" style="font-size:0.75rem;">Pending Approval</span>
+                    {% endif %}
+                </td>
                 {% if role == 'admin' %}
                 <td>
-                    <div class="d-flex gap-1">
+                    <div class="d-flex gap-1 flex-wrap">
                         <a href="{% url 'student_detail' student.pk %}" class="btn btn-xs btn-outline-primary" style="font-size:0.72rem;padding:0.2rem 0.5rem;">View</a>
                         <a href="{% url 'student_edit' student.pk %}" class="btn btn-xs btn-outline-warning" style="font-size:0.72rem;padding:0.2rem 0.5rem;">Edit</a>
+                        {% if not student.approved %}
+                        <a href="{% url 'student_approve' student.pk %}" class="btn btn-xs btn-outline-success" style="font-size:0.72rem;padding:0.2rem 0.5rem;">Approve</a>
+                        {% endif %}
                         <a href="{% url 'student_delete' student.pk %}" class="btn btn-xs btn-outline-danger" style="font-size:0.72rem;padding:0.2rem 0.5rem;">Delete</a>
                     </div>
                 </td>

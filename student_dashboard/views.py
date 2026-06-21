@@ -1,3 +1,4 @@
+import os
 import random
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
@@ -50,22 +51,50 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     if request.method == 'POST':
-        username = request.POST.get('username')
+        identifier = request.POST.get('username', '').strip()
         password = request.POST.get('password')
         role_tab = request.POST.get('role_tab', 'student')
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=identifier, password=password)
+        if user is None and identifier:
+            if '@' in identifier:
+                email_user = User.objects.filter(email__iexact=identifier).first()
+                if email_user:
+                    user = authenticate(request, username=email_user.username, password=password)
+            if user is None:
+                normalized = identifier.replace(' ', '').replace('-', '').replace('+', '')
+                if normalized.isdigit():
+                    student = Student.objects.filter(phone=identifier).first()
+                    faculty = Faculty.objects.filter(phone=identifier).first()
+                    if student:
+                        user = authenticate(request, username=student.user.username, password=password)
+                    elif faculty:
+                        user = authenticate(request, username=faculty.user.username, password=password)
         if user is not None:
             actual_role = get_role(user)
             # Validate role tab matches actual role
             if role_tab == 'admin' and actual_role != 'admin':
-                return render(request, 'login.html', {'error': 'You are not an admin.', 'active_tab': role_tab})
+                return render(request, 'login.html', {'error': 'You are not an admin.', 'active_tab': role_tab, 'username': identifier})
             if role_tab == 'faculty' and actual_role != 'faculty':
-                return render(request, 'login.html', {'error': 'You are not registered as faculty.', 'active_tab': role_tab})
+                return render(request, 'login.html', {'error': 'You are not registered as faculty.', 'active_tab': role_tab, 'username': identifier})
             if role_tab == 'student' and actual_role != 'student':
-                return render(request, 'login.html', {'error': 'You are not registered as a student.', 'active_tab': role_tab})
+                return render(request, 'login.html', {'error': 'You are not registered as a student.', 'active_tab': role_tab, 'username': identifier})
+            if actual_role == 'student':
+                try:
+                    student = Student.objects.get(user=user)
+                    if not student.approved:
+                        return render(request, 'login.html', {'error': 'Your student account is pending admin approval.', 'active_tab': role_tab, 'username': identifier})
+                except Student.DoesNotExist:
+                    pass
+            if actual_role == 'faculty':
+                try:
+                    faculty = Faculty.objects.get(user=user)
+                    if not faculty.approved:
+                        return render(request, 'login.html', {'error': 'Your faculty account is pending admin approval.', 'active_tab': role_tab, 'username': identifier})
+                except Faculty.DoesNotExist:
+                    pass
             login(request, user)
             return redirect('dashboard')
-        return render(request, 'login.html', {'error': 'Invalid username or password.', 'username': username, 'active_tab': role_tab})
+        return render(request, 'login.html', {'error': 'Invalid username, email, phone or password.', 'username': identifier, 'active_tab': role_tab})
     return render(request, 'login.html', {'active_tab': 'student'})
 
 
@@ -146,11 +175,19 @@ def user_signup(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
+        phone = request.POST.get('phone', '').strip()
+        role = request.POST.get('role', 'student')
+        secret_code = request.POST.get('secret_code', '').strip()
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         first_name = request.POST.get('first_name', '')
         last_name = request.POST.get('last_name', '')
-        base_ctx = {'username': username, 'email': email, 'first_name': first_name, 'last_name': last_name}
+        base_ctx = {'username': username, 'email': email, 'first_name': first_name, 'last_name': last_name, 'phone': phone, 'role': role, 'secret_code': secret_code}
+
+        valid_roles = ('student', 'faculty', 'admin')
+        if role not in valid_roles:
+            return render(request, 'signup.html', {**base_ctx, 'error': 'Invalid role selected'})
+
         if not all([username, email, password, confirm_password]):
             return render(request, 'signup.html', {**base_ctx, 'error': 'All fields are required'})
         if password != confirm_password:
@@ -159,16 +196,36 @@ def user_signup(request):
             return render(request, 'signup.html', {**base_ctx, 'error': 'Username already exists'})
         if User.objects.filter(email=email).exists():
             return render(request, 'signup.html', {**base_ctx, 'error': 'Email already registered'})
+        if phone and (Student.objects.filter(phone=phone).exists() or Faculty.objects.filter(phone=phone).exists()):
+            return render(request, 'signup.html', {**base_ctx, 'error': 'Phone number already registered'})
+
+        faculty_secret = os.getenv('FACULTY_SIGNUP_SECRET', 'FACULTY2026')
+        admin_secret = os.getenv('ADMIN_SIGNUP_SECRET', 'ADMIN2026')
+        if role == 'faculty' and secret_code != faculty_secret:
+            return render(request, 'signup.html', {**base_ctx, 'error': 'Invalid faculty setup code'})
+        if role == 'admin' and secret_code != admin_secret:
+            return render(request, 'signup.html', {**base_ctx, 'error': 'Invalid admin setup code'})
+
         try:
+            if role == 'admin':
+                user = User.objects.create_superuser(username=username, email=email, password=password,
+                                                     first_name=first_name, last_name=last_name)
+                UserRole.objects.create(user=user, role='admin')
+                login(request, user)
+                return redirect('dashboard')
             user = User.objects.create_user(username=username, email=email, password=password,
                                             first_name=first_name, last_name=last_name)
-            UserRole.objects.create(user=user, role='student')
-            Student.objects.create(user=user)
-            login(request, user)
-            return redirect('dashboard')
+            UserRole.objects.create(user=user, role=role)
+            if role == 'faculty':
+                Faculty.objects.create(user=user, phone=phone, approved=False)
+                success = 'Faculty account created and is pending admin approval.'
+            else:
+                Student.objects.create(user=user, phone=phone, approved=False)
+                success = 'Student account created and is pending admin approval.'
+            return render(request, 'signup.html', {**base_ctx, 'success': success})
         except Exception as e:
             return render(request, 'signup.html', {**base_ctx, 'error': f'Error: {str(e)}'})
-    return render(request, 'signup.html')
+    return render(request, 'signup.html', {'role': 'student'})
 
 
 @login_required
@@ -276,7 +333,7 @@ def faculty_add(request):
         user = User.objects.create_user(username=username, email=email, password=password,
                                         first_name=first_name, last_name=last_name)
         UserRole.objects.create(user=user, role='faculty')
-        Faculty.objects.create(user=user, employee_id=employee_id, department=department, phone=phone)
+        Faculty.objects.create(user=user, employee_id=employee_id, department=department, phone=phone, approved=True)
         return redirect('faculty_list')
     return render(request, 'faculty_form.html')
 
@@ -288,6 +345,22 @@ def faculty_delete(request, pk):
         faculty.user.delete()
         return redirect('faculty_list')
     return render(request, 'faculty_confirm_delete.html', {'faculty': faculty})
+
+
+@admin_required
+def faculty_approve(request, pk):
+    faculty = get_object_or_404(Faculty, pk=pk)
+    faculty.approved = True
+    faculty.save()
+    return redirect('faculty_list')
+
+
+@admin_required
+def student_approve(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    student.approved = True
+    student.save()
+    return redirect('students')
 
 
 # ---------- Students (all roles can view) ----------
@@ -334,7 +407,7 @@ def student_add(request):
         UserRole.objects.create(user=user, role='student')
         branch = Branch.objects.get(id=branch_id) if branch_id else None
         Student.objects.create(user=user, branch=branch, student_id=student_id,
-                               phone=phone, enrollment_date=enrollment_date, fee_paid=fee_paid)
+                               phone=phone, enrollment_date=enrollment_date, fee_paid=fee_paid, approved=True)
         return redirect('students')
     return render(request, 'student_form.html', {'branches': Branch.objects.all()})
 

@@ -134,11 +134,14 @@
             <input type="hidden" name="role_tab" id="roleTabInput" value="{{ active_tab|default:'student' }}">
 
             <div class="mb-3">
-                <label class="form-label">Username</label>
+                <label class="form-label">Username / Email / Phone</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-user" id="userIcon"></i></span>
                     <input type="text" name="username" class="form-control"
-                           value="{{ username|default:'' }}" placeholder="Enter your username" required autofocus>
+                           value="{{ username|default:'' }}" placeholder="Username, email or phone" required autofocus>
+                </div>
+                <div class="form-text" style="font-size:0.82rem; color:#718096;">
+                    Use the username, registered email, or phone number for login.
                 </div>
             </div>
 
@@ -164,7 +167,7 @@
         </form>
 
         <div class="bottom-link">
-            New student? <a href="{% url 'signup' %}">Create account here</a>
+            New user? <a href="{% url 'signup' %}">Create account here</a>
         </div>
     </div>
 
