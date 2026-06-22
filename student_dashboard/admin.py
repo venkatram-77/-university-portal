@@ -1,11 +1,16 @@
 from django.contrib import admin
-from .models import Branch, Course, Student, Grade, Attendance, FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee
+from .models import Branch, Course, Student, Grade, Attendance, Faculty, UserRole, FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee, Department, Enrollment, Submission
 
 admin.site.register(Branch)
 admin.site.register(Course)
 admin.site.register(Student)
 admin.site.register(Grade)
 admin.site.register(Attendance)
+admin.site.register(Faculty)
+admin.site.register(UserRole)
+admin.site.register(Department)
+admin.site.register(Enrollment)
+admin.site.register(Submission)
 admin.site.register(FeePayment)
 admin.site.register(Assignment)
 admin.site.register(Timetable)

@@ -8,14 +8,40 @@ class Branch(models.Model):
 
     def __str__(self):
         return self.name
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, blank=True, default='')
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Course(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20, blank=True, default='')
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='courses')
     description = models.TextField(blank=True)
     credits = models.IntegerField(default=0)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
+
     def __str__(self):
         return self.name
+
+class Enrollment(models.Model):
+    STATUS_CHOICES = [('active', 'Active'), ('completed', 'Completed'), ('dropped', 'Dropped')]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+    semester = models.CharField(max_length=20)
+    academic_year = models.CharField(max_length=20)
+    enrollment_date = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+
+    class Meta:
+        unique_together = ('student', 'course', 'semester', 'academic_year')
+
+    def __str__(self):
+        return f"{self.student} - {self.course} ({self.semester} {self.academic_year})"
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
@@ -151,6 +177,7 @@ class Faculty(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='faculty')
     employee_id = models.CharField(max_length=20, blank=True, default='')
     department = models.CharField(max_length=100, blank=True)
+    department_link = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='faculty_members')
     phone = models.CharField(max_length=20, blank=True)
     joined_date = models.DateField(null=True, blank=True)
     approved = models.BooleanField(default=False)
@@ -158,3 +185,20 @@ class Faculty(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Submission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='submissions')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    content = models.TextField(blank=True)
+    file = models.FileField(upload_to='submissions/', blank=True, null=True)
+    grade = models.FloatField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    graded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('assignment', 'student')
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.assignment.title}"
