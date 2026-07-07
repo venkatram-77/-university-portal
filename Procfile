@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT
+web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --worker-class sync --timeout 90 --max-requests 1000 --max-requests-jitter 50 --keep-alive 5 --access-logfile - --error-logfile - --log-level info
