@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Request Leave{% endblock %}
+{% block page_title %}Request Leave{% endblock %}
+{% block content %}
+<div class="bg-white rounded-3 shadow-sm p-4">
+    <h5 class="mb-3">Submit Leave Request</h5>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Subject</label>
+                <input type="text" name="subject" class="form-control" placeholder="Reason for leave" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Message</label>
+                <textarea name="message" class="form-control" rows="5" placeholder="Describe why you need leave." required></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end_date" class="form-control">
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success">Submit Request</button>
+                <a href="{% url 'leave_requests' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

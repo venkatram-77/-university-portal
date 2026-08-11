@@ -108,8 +108,9 @@ This project is ready for deployment on free hosts like Railway and PythonAnywhe
 - PythonAnywhere production: `https://<your-username>.pythonanywhere.com`.
 
 ## Default Admin Login
-- Username: `admin`
-- Password: `admin123`
+- Username: `venkatram`
+- Password: `venkat95`
+- Note: After a fresh deploy, run `python create_admin.py` (or the build runs it automatically) to create/reset this account.
 
 ## Tech Stack
 - Python 3.13

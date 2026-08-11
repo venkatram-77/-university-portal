@@ -14,8 +14,9 @@ from django.contrib.auth.models import User
 from student_dashboard.models import UserRole
 
 admins = [
-    {'username': 'venkatram', 'email': 'venkatram@university.com', 'password': 'venkat@7702'},
+    {'username': 'venkatram', 'email': 'venkatram@university.com', 'password': 'venkat95'},
     {'username': 'Admin1', 'email': 'admin1@university.com', 'password': 'AdminRAM'},
+    {'username': 'admin12', 'email': 'vra7702@gmail.com', 'password': 'Adim RAM123'},
 ]
 
 for admin in admins:
@@ -29,8 +30,12 @@ for admin in admins:
         print(f"Superuser '{username}' created successfully with admin role!")
     else:
         user = User.objects.get(username=username)
+        user.set_password(password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
         if not UserRole.objects.filter(user=user).exists():
             UserRole.objects.create(user=user, role='admin')
-            print(f"Superuser '{username}' already exists. Admin role assigned!")
+            print(f"Superuser '{username}' updated. Admin role assigned!")
         else:
-            print(f"Superuser '{username}' already exists with role!")
+            print(f"Superuser '{username}' updated with new password and role!")

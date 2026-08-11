@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Leave Requests{% endblock %}
+{% block page_title %}Leave Requests{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Leave Requests</h5>
+    {% if role == 'student' %}
+    <a href="{% url 'leave_request_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-envelope-open-text me-1"></i>Request Leave</a>
+    {% endif %}
+</div>
+
+<div class="bg-white rounded-3 shadow-sm overflow-hidden">
+    <table class="table table-hover mb-0">
+        <thead style="background:#f7fafc;">
+            <tr>
+                <th>Student</th>
+                <th>Subject</th>
+                <th>Period</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in leave_requests %}
+            <tr>
+                <td>{{ request.student.user.get_full_name|default:request.student.user.username }}</td>
+                <td>{{ request.subject }}</td>
+                <td>
+                    {% if request.start_date and request.end_date %}
+                        {{ request.start_date|date:'M d, Y' }} - {{ request.end_date|date:'M d, Y' }}
+                    {% elif request.start_date %}
+                        {{ request.start_date|date:'M d, Y' }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge {% if request.status == 'approved' %}bg-success{% elif request.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ request.get_status_display }}</span>
+                </td>
+                <td>{{ request.created_at|date:'M d, Y' }}</td>
+                <td>
+                    {% if role != 'student' %}
+                        {% if request.status == 'pending' %}
+                            <button class="btn btn-xs btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ request.id }}">Approve</button>
+                            <button class="btn btn-xs btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ request.id }}">Reject</button>
+                        {% else %}
+                            <span class="text-muted" style="font-size:0.82rem;">No action</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% if role != 'student' %}
+            <div class="modal fade" id="approveModal{{ request.id }}" tabindex="-1" aria-labelledby="approveModalLabel{{ request.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'leave_request_approve' request.pk %}">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="approveModalLabel{{ request.id }}">Approve Leave</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Response Note</label>
+                                    <textarea name="response_note" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Approve</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ request.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'leave_request_reject' request.pk %}">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="rejectModalLabel{{ request.id }}">Reject Leave</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Response Note</label>
+                                    <textarea name="response_note" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Reject</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No leave requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

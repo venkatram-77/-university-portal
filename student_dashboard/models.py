@@ -155,6 +155,31 @@ class Event(models.Model):
         return self.title
 
 
+class LeaveRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='leave_requests')
+    faculty = models.ForeignKey('Faculty', on_delete=models.SET_NULL, null=True, blank=True, related_name='student_leave_requests')
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    response_note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leave_responses')
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.subject} ({self.status})"
+
+
 class Fee(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)

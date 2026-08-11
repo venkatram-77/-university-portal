@@ -13,12 +13,28 @@ call_command('migrate', '--run-syncdb', verbosity=0)
 print("Migrations done.")
 
 # Admin
-if not User.objects.filter(username='admin').exists():
-    u = User.objects.create_superuser('admin', 'admin@university.com', 'admin123')
-    UserRole.objects.get_or_create(user=u, defaults={'role': 'admin'})
-    print("Admin:   admin / admin123")
-else:
-    print("Admin already exists.")
+admin_accounts = [
+    {'username': 'venkatram', 'email': 'venkatram@university.com', 'password': 'venkat95'},
+    {'username': 'admin12', 'email': 'vra7702@gmail.com', 'password': 'Adim RAM123'},
+]
+for admin in admin_accounts:
+    username = admin['username']
+    email = admin['email']
+    password = admin['password']
+    if not User.objects.filter(username=username).exists():
+        u = User.objects.create_superuser(username, email, password)
+        UserRole.objects.get_or_create(user=u, defaults={'role': 'admin'})
+        print(f"Admin:   {username} / {password}")
+    else:
+        u = User.objects.get(username=username)
+        if not u.is_superuser:
+            u.is_superuser = True
+            u.is_staff = True
+            u.save()
+        u.set_password(password)
+        u.save()
+        UserRole.objects.get_or_create(user=u, defaults={'role': 'admin'})
+        print(f"Admin already exists. Password reset for {username}.")
 
 # Branch + Course
 branch, _ = Branch.objects.get_or_create(name='Computer Science', defaults={'description': 'CS Department'})

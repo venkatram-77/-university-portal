@@ -8,10 +8,17 @@ from django.contrib.auth.models import User
 from django.db.models import Avg, Sum, Count, Q
 from django.utils import timezone
 from functools import wraps
+from django.http import JsonResponse
 from .models import (
     Student, Course, Branch, Grade, Attendance, Faculty, UserRole,
-    FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee
+    FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee,
+    LeaveRequest
 )
+
+
+# ---------- Health Check ----------
+def health_check(request):
+    return JsonResponse({'status': 'ok'})
 
 
 # ---------- Role Helpers ----------
@@ -54,6 +61,7 @@ def user_login(request):
         identifier = request.POST.get('username', '').strip()
         password = request.POST.get('password')
         role_tab = request.POST.get('role_tab', 'student')
+        normalized = identifier.replace(' ', '').replace('-', '').replace('+', '')
         user = authenticate(request, username=identifier, password=password)
         if user is None and identifier:
             if '@' in identifier:
@@ -61,14 +69,17 @@ def user_login(request):
                 if email_user:
                     user = authenticate(request, username=email_user.username, password=password)
             if user is None:
-                normalized = identifier.replace(' ', '').replace('-', '').replace('+', '')
                 if normalized.isdigit():
-                    student = Student.objects.filter(phone=identifier).first()
-                    faculty = Faculty.objects.filter(phone=identifier).first()
+                    student = Student.objects.filter(phone=normalized).first()
+                    faculty = Faculty.objects.filter(phone=normalized).first()
                     if student:
                         user = authenticate(request, username=student.user.username, password=password)
                     elif faculty:
                         user = authenticate(request, username=faculty.user.username, password=password)
+            if user is None:
+                username_user = User.objects.filter(username__iexact=identifier).first()
+                if username_user:
+                    user = authenticate(request, username=username_user.username, password=password)
         if user is not None:
             actual_role = get_role(user)
             # Validate role tab matches actual role
@@ -105,33 +116,42 @@ def forgot_password(request):
         # Find user by email or username
         user = None
         if '@' in identifier:
-            user = User.objects.filter(email=identifier).first()
+            user = User.objects.filter(email__iexact=identifier).first()
         else:
-            user = User.objects.filter(username=identifier).first()
-            if not user:
-                # try phone via student/faculty
+            normalized = identifier.replace(' ', '').replace('-', '').replace('+', '')
+            user = User.objects.filter(username__iexact=identifier).first()
+            if not user and normalized.isdigit():
                 try:
-                    s = Student.objects.get(phone=identifier)
+                    s = Student.objects.get(phone=normalized)
                     user = s.user
                 except Student.DoesNotExist:
                     try:
-                        f = Faculty.objects.get(phone=identifier)
+                        f = Faculty.objects.get(phone=normalized)
                         user = f.user
                     except Faculty.DoesNotExist:
                         pass
         if not user:
             return render(request, 'forgot_password.html', {'error': 'No account found with that email, username or phone number.'})
+        if not user.email:
+            return render(request, 'forgot_password.html', {
+                'error': 'No email address is registered for this account. Contact the administrator for help.'
+            })
         otp = str(random.randint(100000, 999999))
         request.session['reset_otp'] = otp
         request.session['reset_user_id'] = user.id
-        # Send OTP via email (prints to console in dev)
-        send_mail(
-            'University Portal - Password Reset OTP',
-            f'Your OTP for password reset is: {otp}\n\nValid for this session only.',
-            'noreply@university.com',
-            [user.email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                'University Portal - Password Reset OTP',
+                f'Your OTP for password reset is: {otp}\n\nValid for this session only.',
+                'noreply@university.com',
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as exc:
+            print(f'Password reset email error: {exc}')
+            return render(request, 'forgot_password.html', {
+                'error': 'Unable to send reset OTP. Please contact the administrator or configure email settings.'
+            })
         print(f'\n[PASSWORD RESET OTP] User: {user.username} | OTP: {otp}\n')
         return redirect('verify_otp')
     return render(request, 'forgot_password.html')
@@ -477,8 +497,20 @@ def profile(request):
 
 
 # ---------- Grades (faculty/admin enter, student views own) ----------
-@faculty_or_admin_required
+@login_required
 def grades(request):
+    role = get_role(request.user)
+    if role == 'student':
+        try:
+            student = Student.objects.get(user=request.user)
+        except Student.DoesNotExist:
+            return redirect('dashboard')
+        grades_list = Grade.objects.filter(student=student).select_related('student__user')
+        return render(request, 'grades.html', {
+            'grades': grades_list,
+            'role': role,
+        })
+
     grades_list = Grade.objects.select_related('student__user').all()
     student_id = request.GET.get('student')
     if student_id:
@@ -487,6 +519,7 @@ def grades(request):
         'grades': grades_list,
         'students': Student.objects.select_related('user').all(),
         'selected_student': student_id,
+        'role': role,
     })
 
 
@@ -505,8 +538,20 @@ def grade_add(request):
 
 
 # ---------- Attendance (faculty/admin mark, student views own) ----------
-@faculty_or_admin_required
+@login_required
 def attendance(request):
+    role = get_role(request.user)
+    if role == 'student':
+        try:
+            student = Student.objects.get(user=request.user)
+        except Student.DoesNotExist:
+            return redirect('dashboard')
+        attendance_list = Attendance.objects.filter(student=student).select_related('course').order_by('-date')
+        return render(request, 'attendance.html', {
+            'attendance_list': attendance_list,
+            'role': role,
+        })
+
     attendance_list = Attendance.objects.select_related('student__user', 'course').all()
     course_id = request.GET.get('course')
     date = request.GET.get('date')
@@ -519,6 +564,7 @@ def attendance(request):
         'courses': Course.objects.all(),
         'selected_course': course_id,
         'selected_date': date,
+        'role': role,
     })
 
 
@@ -537,6 +583,79 @@ def attendance_mark(request):
         'courses': Course.objects.all(),
         'today': timezone.now().date(),
     })
+
+
+@login_required
+def leave_requests(request):
+    role = get_role(request.user)
+    if role == 'student':
+        try:
+            student = Student.objects.get(user=request.user)
+        except Student.DoesNotExist:
+            return redirect('dashboard')
+        requests_list = LeaveRequest.objects.filter(student=student).order_by('-created_at')
+    else:
+        requests_list = LeaveRequest.objects.select_related('student__user', 'faculty__user').order_by('-created_at')
+    return render(request, 'leave_requests.html', {
+        'leave_requests': requests_list,
+        'role': role,
+    })
+
+
+@login_required
+def leave_request_add(request):
+    role = get_role(request.user)
+    if role != 'student':
+        return redirect('leave_requests')
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return redirect('dashboard')
+    if request.method == 'POST':
+        leave_request = LeaveRequest.objects.create(
+            student=student,
+            subject=request.POST.get('subject', '').strip(),
+            message=request.POST.get('message', '').strip(),
+            start_date=request.POST.get('start_date') or None,
+            end_date=request.POST.get('end_date') or None,
+            status='pending',
+        )
+        return redirect('leave_requests')
+    return render(request, 'leave_request_form.html')
+
+
+@faculty_or_admin_required
+def leave_request_approve(request, pk):
+    leave_request = get_object_or_404(LeaveRequest, pk=pk)
+    if request.method == 'POST':
+        leave_request.status = 'approved'
+        leave_request.response_note = request.POST.get('response_note', '').strip()
+        leave_request.responded_by = request.user
+        leave_request.responded_at = timezone.now()
+        if get_role(request.user) == 'faculty':
+            try:
+                leave_request.faculty = Faculty.objects.get(user=request.user)
+            except Faculty.DoesNotExist:
+                pass
+        leave_request.save()
+    return redirect('leave_requests')
+
+
+@faculty_or_admin_required
+def leave_request_reject(request, pk):
+    leave_request = get_object_or_404(LeaveRequest, pk=pk)
+    if request.method == 'POST':
+        leave_request.status = 'rejected'
+        leave_request.response_note = request.POST.get('response_note', '').strip()
+        leave_request.responded_by = request.user
+        leave_request.responded_at = timezone.now()
+        if get_role(request.user) == 'faculty':
+            try:
+                leave_request.faculty = Faculty.objects.get(user=request.user)
+            except Faculty.DoesNotExist:
+                pass
+        leave_request.save()
+    return redirect('leave_requests')
 
 
 # ---------- Fee ----------

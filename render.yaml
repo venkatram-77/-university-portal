@@ -3,14 +3,31 @@ services:
     name: university-portal
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT"
+    healthCheckPath: /healthz/
+    buildCommand: "pip install -r requirements.txt && python setup.py && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 60 --preload --access-logfile - --error-logfile - --log-level warning"
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        value: "university-portal.onrender.com"
+        value: "*.onrender.com,localhost,127.0.0.1"
+      - key: EMAIL_HOST
+        value: "smtp.gmail.com"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        value: "vra7702@gmail.com"
+      - key: EMAIL_HOST_PASSWORD
+        value: ""
+      - key: DEFAULT_FROM_EMAIL
+        value: "vra7702@gmail.com"
+      - key: ADMIN_SIGNUP_SECRET
+        value: "ADMIN2026"
+      - key: FACULTY_SIGNUP_SECRET
+        value: "FACULTY2026"
       - key: PYTHON_VERSION
         value: "3.13"

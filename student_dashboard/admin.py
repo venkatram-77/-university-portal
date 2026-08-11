@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Branch, Course, Student, Grade, Attendance, Faculty, UserRole, FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee, Department, Enrollment, Submission
+from .models import Branch, Course, Student, Grade, Attendance, Faculty, UserRole, FeePayment, Assignment, Timetable, ExamSchedule, Notice, Event, Fee, Department, Enrollment, Submission, LeaveRequest
 
 admin.site.register(Branch)
 admin.site.register(Course)
@@ -18,3 +18,4 @@ admin.site.register(ExamSchedule)
 admin.site.register(Notice)
 admin.site.register(Event)
 admin.site.register(Fee)
+admin.site.register(LeaveRequest)

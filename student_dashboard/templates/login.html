@@ -14,9 +14,9 @@
             align-items:center; justify-content:center;
             font-family:'Segoe UI',sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 1.25rem;
         }
-        /* Header */
-        .site-header { text-align:center; margin-bottom:2rem; color:white; }
+        .site-header { text-align:center; margin-bottom:1.5rem; color:white; }
         .site-header .logo-circle {
             width:72px; height:72px; border-radius:50%;
             background:rgba(255,255,255,0.15);
@@ -25,22 +25,20 @@
             backdrop-filter:blur(10px);
             border:2px solid rgba(255,255,255,0.2);
         }
-        .site-header h1 { font-size:1.75rem; font-weight:800; letter-spacing:0.5px; }
+        .site-header h1 { font-size:clamp(1.35rem, 3vw, 1.75rem); font-weight:800; letter-spacing:0.5px; }
         .site-header p { font-size:0.85rem; opacity:0.6; margin-top:0.3rem; }
-        /* Card */
         .login-card {
-            background:white; border-radius:20px; width:100%;
-            max-width:420px; padding:2rem 2rem 1.5rem;
+            background:white; border-radius:20px; width:min(100%, 420px);
+            padding:1.5rem 1.25rem 1.25rem;
             box-shadow:0 25px 60px rgba(0,0,0,0.4);
         }
-        /* Profile Icons above tabs */
         .profile-icons {
-            display:flex; justify-content:center; gap:1.5rem;
-            margin-bottom:1.5rem;
+            display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;
+            margin-bottom:1rem;
         }
         .profile-icon {
             display:flex; flex-direction:column; align-items:center;
-            gap:0.4rem; cursor:pointer; transition:all 0.2s;
+            gap:0.4rem; cursor:pointer; transition:all 0.2s; min-width:72px;
         }
         .profile-icon .icon-circle {
             width:56px; height:56px; border-radius:50%;
@@ -56,19 +54,16 @@
         .profile-icon.active-student .icon-circle { background:#ebf4ff; border-color:#667eea; color:#667eea; }
         .profile-icon.active-student span { color:#667eea; }
         .profile-icon:hover .icon-circle { transform:scale(1.1); }
-        /* Tab label */
         .tab-label {
-            text-align:center; margin-bottom:1.25rem;
+            text-align:center; margin-bottom:1rem;
             font-size:1rem; font-weight:700; color:#2d3748;
         }
         .tab-label span { font-size:0.8rem; font-weight:400; color:#718096; display:block; }
-        /* Input */
         .form-label { font-size:0.82rem; font-weight:600; color:#4a5568; margin-bottom:0.3rem; }
         .input-group-text { background:#f7fafc; border-right:none; color:#667eea; font-size:0.9rem; }
         .form-control { border-left:none; border-color:#e2e8f0; font-size:0.9rem; }
         .form-control:focus { border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.12); }
         .input-group:focus-within .input-group-text { border-color:#667eea; }
-        /* Button */
         .btn-login {
             width:100%; padding:0.75rem; border:none; border-radius:10px;
             font-size:0.95rem; font-weight:700; color:white; cursor:pointer;
@@ -78,18 +73,24 @@
         .btn-faculty-clr { background:linear-gradient(135deg,#38a169,#276749); }
         .btn-student-clr { background:linear-gradient(135deg,#667eea,#764ba2); }
         .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.2); }
-        /* Error */
         .alert-err {
             background:#fff5f5; color:#c53030; border:1px solid #fed7d7;
             border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem;
             display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;
         }
-        /* Forgot & signup */
         .forgot-link { text-align:right; margin-bottom:1rem; }
         .forgot-link a { font-size:0.8rem; color:#667eea; text-decoration:none; }
         .forgot-link a:hover { text-decoration:underline; }
         .bottom-link { text-align:center; color:#718096; font-size:0.8rem; margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid #f0f0f0; }
         .bottom-link a { color:#667eea; font-weight:600; text-decoration:none; }
+        @media (max-width: 576px) {
+            body { padding: 0.9rem; }
+            .login-card { padding: 1.1rem 0.95rem; border-radius: 16px; }
+            .profile-icons { gap: 0.5rem; }
+            .profile-icon { min-width: 64px; }
+            .profile-icon .icon-circle { width: 50px; height: 50px; font-size: 1.2rem; }
+            .forgot-link { text-align:left; }
+        }
     </style>
 </head>
 <body>
