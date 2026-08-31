@@ -5,7 +5,7 @@ services:
     plan: free
     healthCheckPath: /healthz/
     buildCommand: "pip install -r requirements.txt && python setup.py && python manage.py collectstatic --noinput"
-    startCommand: "gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 60 --preload --access-logfile - --error-logfile - --log-level warning"
+    startCommand: "gunicorn university_portal.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --threads 4 --timeout 60 --access-logfile - --error-logfile - --log-level warning"
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true

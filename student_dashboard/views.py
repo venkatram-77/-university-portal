@@ -26,7 +26,7 @@ def get_role(user):
     try:
         return user.role.role
     except Exception:
-        if user.is_superuser:
+        if user.is_superuser or user.is_staff:
             return 'admin'
         return 'student'
 

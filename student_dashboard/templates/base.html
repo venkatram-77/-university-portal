@@ -117,7 +117,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-{% with role=request.user.role.role|default:"student" %}
+{% with role=current_user_role %}
 
 <!-- Sidebar -->
 <nav class="sidebar">

@@ -25,11 +25,18 @@ python manage.py collectstatic --noinput --clear
 echo "[3/4] Verifying admin account..."
 python manage.py shell << 'PYEOF'
 from django.contrib.auth.models import User
-if not User.objects.filter(username='Admin1').exists():
-    print("Creating Admin1...")
-    User.objects.create_superuser('Admin1', 'admin1@university.com', 'AdminRAM')
+from student_dashboard.models import UserRole
+admin, created = User.objects.get_or_create(username='Admin1')
+if created or not admin.is_superuser:
+    admin.is_superuser = True
+    admin.is_staff = True
+    admin.email = 'admin1@university.com'
+    admin.set_password('AdminRAM')
+    admin.save()
+    print("Created/updated Admin1")
 else:
     print("Admin1 already exists")
+UserRole.objects.get_or_create(user=admin, defaults={'role': 'admin'})
 PYEOF
 
 # Start Gunicorn with error handling
